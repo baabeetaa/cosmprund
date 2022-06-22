@@ -23,7 +23,6 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v2/modules/core/24-host"
 	"github.com/neilotoole/errgroup"
 	"github.com/spf13/cobra"
-	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/tendermint/tendermint/state"
 	tmstore "github.com/tendermint/tendermint/store"
 	db "github.com/tendermint/tm-db"
@@ -72,16 +71,18 @@ func pruneCmd() *cobra.Command {
 func pruneAppState(home string) error {
 
 	// this has the potential to expand size, should just use state sync
-	// dbType := db.BackendType(backend)
+	dbType := db.BackendType(backend)
 
 	dbDir := rootify(dataDir, home)
 
-	o := opt.Options{
-		DisableSeeksCompaction: true,
-	}
+	//o := opt.Options{
+	//	DisableSeeksCompaction: true,
+	//}
 
 	// Get BlockStore
-	appDB, err := db.NewGoLevelDBWithOpts("application", dbDir, &o)
+	//appDB, err := db.NewGoLevelDBWithOpts("application", dbDir, &o)
+	appDB, err := db.NewDB("application", dbType, dbDir)
+
 	if err != nil {
 		return err
 	}
@@ -143,22 +144,27 @@ func pruneAppState(home string) error {
 
 // pruneTMData prunes the tendermint blocks and state based on the amount of blocks to keep
 func pruneTMData(home string) error {
+	dbType := db.BackendType(backend)
 
 	dbDir := rootify(dataDir, home)
 
-	o := opt.Options{
-		DisableSeeksCompaction: true,
-	}
+	//o := opt.Options{
+	//	DisableSeeksCompaction: true,
+	//}
 
 	// Get BlockStore
-	blockStoreDB, err := db.NewGoLevelDBWithOpts("blockstore", dbDir, &o)
+	//blockStoreDB, err := db.NewGoLevelDBWithOpts("blockstore", dbDir, &o)
+	blockStoreDB, err := db.NewDB("blockstore", dbType, dbDir)
+
 	if err != nil {
 		return err
 	}
 	blockStore := tmstore.NewBlockStore(blockStoreDB)
 
 	// Get StateStore
-	stateDB, err := db.NewGoLevelDBWithOpts("state", dbDir, &o)
+	//stateDB, err := db.NewGoLevelDBWithOpts("state", dbDir, &o)
+	stateDB, err := db.NewDB("state", dbType, dbDir)
+
 	if err != nil {
 		return err
 	}
